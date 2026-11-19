@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProCV Studio | منشئ السيرة الذاتية الاحترافي</title>
+    
+    <!-- استيراد خط Tajawal للعربية و Inter للإنجليزية من Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    
+    <!-- مكتبة أيقونات FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- مكتبة Tailwind CSS للتصميم المتجاوب والحديث -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- إعدادات Tailwind المخصصة -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        arabic: ['Tajawal', 'sans-serif'],
+                        english: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* تنسيقات عامة للخطوط والتمرير */
+        body {
+            font-family: 'Tajawal', 'Inter', sans-serif;
+            background-color: #f1f5f9;
+        }
+
+        /* تنسيق شريط التمرير المخصص */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* محاكاة ورقة A4 في شاشة المعاينة */
+        .a4-paper {
+            width: 210mm;
+            min-height: 297mm;
+            background: white;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            margin: 0 auto;
+            transition: all 0.3s ease;
+        }
+
+        /* إخفاء عناصر التحكم عند الطباعة وتنسيق الورقة لتملأ الصفحة */
+        @media print {
+            body {
+                background: white !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .print-container {
+                width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                overflow: visible !important;
+                background: white !important;
+            }
+            .a4-paper {
+                width: 100% !important;
+                min-height: auto !important;
+                box-shadow: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            @page {
+                size: A4;
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased selection:bg-indigo-500 selection:text-white">
+
+    <!-- شريط التنقل العلوي (Navbar) -->
+    <header class="no-print bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-2">
+            <!-- الشعار -->
+            <div class="flex items-center gap-3">
+                <div id="brand-icon" class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-md transition-colors">
+                    <i class="fa-solid fa-file-signature text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg sm:text-xl text-slate-900 leading-tight">ProCV <span class="text-indigo-600" id="brand-accent">Studio</span></h1>
+                    <p class="text-xs text-slate-500 hidden sm:block">مصمم السير الذاتية الاحترافي الجاهز للطباعة</p>
+                </div>
+            </div>
+
+            <!-- أدوات التحكم السريعة -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                <!-- مبدل اللغة والاتجاه (عربي / إنجليزي) -->
+                <button onclick="toggleLanguage()" class="px-3 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-sm font-medium flex items-center gap-2 transition" title="تغيير لغة السيرة الذاتية">
+                    <i class="fa-solid fa-language text-slate-600"></i>
+                    <span id="lang-btn-text">English CV</span>
+                </button>
+
+                <!-- منتقي الألوان -->
+                <div class="hidden md:flex items-center gap-1.5 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
+                    <button onclick="setThemeColor('#4f46e5', 'indigo')" class="w-6 h-6 rounded-lg bg-indigo-600 hover:scale-110 transition ring-2 ring-offset-1 ring-indigo-600" title="أزرق نيلي"></button>
+                    <button onclick="setThemeColor('#0f172a', 'slate')" class="w-6 h-6 rounded-lg bg-slate-900 hover:scale-110 transition" title="أسود كلاسيكي"></button>
+                    <button onclick="setThemeColor('#0d9488', 'teal')" class="w-6 h-6 rounded-lg bg-teal-600 hover:scale-110 transition" title="أخضر زمردي"></button>
+                    <button onclick="setThemeColor('#be123c', 'rose')" class="w-6 h-6 rounded-lg bg-rose-700 hover:scale-110 transition" title="أحمر عنابي"></button>
+                    <button onclick="setThemeColor('#b45309', 'amber')" class="w-6 h-6 rounded-lg bg-amber-700 hover:scale-110 transition" title="ذهبي داكن"></button>
+                </div>
+
+                <!-- زر ملء بيانات تجريبية / إعادة ضبط -->
+                <button onclick="resetToSample()" class="p-2.5 sm:px-3 sm:py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 text-sm font-medium transition" title="استعادة البيانات الافتراضية">
+                    <i class="fa-solid fa-rotate-right"></i>
+                    <span class="hidden lg:inline mr-1">بيانات تجريبية</span>
+                </button>
+
+                <!-- زر تحميل PDF / طباعة -->
+                <button onclick="window.print()" id="print-btn" class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold shadow-md hover:shadow-lg flex items-center gap-2 transition cursor-pointer">
+                    <i class="fa-solid fa-file-pdf"></i>
+                    <span>تصدير PDF</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- أزرار التبديل للهواتف المحمولة (المحرر / المعاينة) -->
+    <div class="no-print lg:hidden bg-white border-b border-slate-200 p-2 flex gap-2 sticky top-16 z-20">
+        <button onclick="switchMobileTab('editor')" id="tab-editor" class="flex-1 py-2.5 rounded-xl bg-indigo-600 text-white font-bold text-sm transition">
+            <i class="fa-solid fa-pen-to-square ml-1"></i> تعديل البيانات
+        </button>
+        <button onclick="switchMobileTab('preview')" id="tab-preview" class="flex-1 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold text-sm transition">
+            <i class="fa-solid fa-eye ml-1"></i> معاينة السيرة
+        </button>
+    </div>
+
+    <!-- المحتوى الرئيسي: تقسيم الشاشة إلى محرر ومعاينة -->
+    <main class="max-w-screen-2xl mx-auto flex flex-col lg:flex-row min-h-[calc(100vh-4rem)]">
+        
+        <!-- القسم الأيمن: لوحة إدخال وتعديل البيانات (Editor Panel) -->
+        <section id="editor-section" class="no-print w-full lg:w-5/12 xl:w-4/12 bg-white border-l border-slate-200 p-4 sm:p-6 overflow-y-auto lg:h-[calc(100vh-4rem)]">
+            
+            <!-- شريط الألوان للهواتف -->
+            <div class="md:hidden mb-6 p-3 bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-between">
+                <span class="text-sm font-bold text-slate-700">لون القالب:</span>
+                <div class="flex items-center gap-2">
+                    <button onclick="setThemeColor('#4f46e5', 'indigo')" class="w-7 h-7 rounded-lg bg-indigo-600"></button>
+                    <button onclick="setThemeColor('#0f172a', 'slate')" class="w-7 h-7 rounded-lg bg-slate-900"></button>
+                    <button onclick="setThemeColor('#0d9488', 'teal')" class="w-7 h-7 rounded-lg bg-teal-600"></button>
+                    <button onclick="setThemeColor('#be123c', 'rose')" class="w-7 h-7 rounded-lg bg-rose-700"></button>
+                    <button onclick="setThemeColor('#b45309', 'amber')" class="w-7 h-7 rounded-lg bg-amber-700"></button>
+                </div>
+            </div>
+
+            <!-- 1. المعلومات الشخصية -->
+            <div class="mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-200/80">
+                <h2 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <span class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs"><i class="fa-solid fa-user"></i></span>
+                    المعلومات الشخصية
+                </h2>
+
+                <!-- رفع الصورة الشخصية -->
+                <div class="mb-4 flex items-center gap-4">
+                    <div class="relative w-16 h-16 rounded-2xl overflow-hidden bg-slate-200 border border-slate-300 flex-shrink-0">
+                        <img id="editor-avatar-preview" src="https://placehold.co/150x150/e2e8f0/475569?text=Photo" alt="صورة شخصية" class="w-full h-full object-cover">
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-xs font-bold text-slate-600 mb-1">الصورة الشخصية (اختياري)</label>
+                        <div class="flex flex-wrap gap-2">
+                            <label class="cursor-pointer px-3 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-medium hover:bg-slate-50 transition">
+                                <i class="fa-solid fa-upload ml-1"></i> اختر صورة
+                                <input type="file" accept="image/*" onchange="handleImageUpload(event)" class="hidden">
+                            </label>
+                            <button onclick="removeAvatar()" class="px-3 py-1.5 bg-red-50 text-red-600 rounded-xl text-xs font-medium hover:bg-red-100 transition">
+                                إزالة
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">الاسم الكامل</label>
+                        <input type="text" id="input-name" oninput="updateData('name', this.value)" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">المسمى الوظيفي</label>
+                        <input type="text" id="input-title" oninput="updateData('title', this.value)" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">البريد الإلكتروني</label>
+                        <input type="email" id="input-email" oninput="updateData('email', this.value)" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" dir="ltr">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">رقم الهاتف</label>
+                        <input type="text" id="input-phone" oninput="updateData('phone', this.value)" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" dir="ltr">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">الموقع / المدينة</label>
+                        <input type="text" id="input-location" oninput="updateData('location', this.value)" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">رابط الموقع / GitHub / LinkedIn</label>
+                        <input type="text" id="input-website" oninput="updateData('website', this.value)" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" dir="ltr">
+                    </div>
+                </div>
+
+                <div class="mt-3">
+                    <label class="block text-xs font-bold text-slate-600 mb-1">النبذة التعريفية (الملخص المهني)</label>
+                    <textarea id="input-summary" rows="3" oninput="updateData('summary', this.value)" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                </div>
+            </div>
+
+            <!-- 2. الخبرات العملية -->
+            <div class="mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-200/80">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                        <span class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs"><i class="fa-solid fa-briefcase"></i></span>
+                        الخبرات العملية
+                    </h2>
+                    <button onclick="addExperience()" class="px-3 py-1.5 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition flex items-center gap-1">
+                        <i class="fa-solid fa-plus"></i> إضافة خبرة
+                    </button>
+                </div>
+                <div id="experience-list" class="space-y-3">
+                    <!-- يتم توليد حقول الخبرات ديناميكياً هنا -->
+                </div>
+            </div>
+
+            <!-- 3. التعليم والمؤهلات -->
+            <div class="mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-200/80">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                        <span class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs"><i class="fa-solid fa-graduation-cap"></i></span>
+                        التعليم والشهادات
+                    </h2>
+                    <button onclick="addEducation()" class="px-3 py-1.5 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition flex items-center gap-1">
+                        <i class="fa-solid fa-plus"></i> إضافة مؤهل
+                    </button>
+                </div>
+                <div id="education-list" class="space-y-3">
+                    <!-- يتم توليد حقول التعليم ديناميكياً هنا -->
+                </div>
+            </div>
+
+            <!-- 4. المهارات -->
+            <div class="mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-200/80">
+                <h2 class="text-base font-bold text-slate-800 mb-3 flex items-center gap-2">
+                    <span class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+                    المهارات التقنية والشخصية
+                </h2>
+                <div class="flex gap-2 mb-3">
+                    <input type="text" id="new-skill-input" placeholder="اكتب مهارة (مثال: JavaScript, إدارة المشاريع)" onkeypress="if(event.key === 'Enter') addSkill()" class="flex-1 px-3 py-2 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <button onclick="addSkill()" class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition">إضافة</button>
+                </div>
+                <div id="skills-tags" class="flex flex-wrap gap-2">
+                    <!-- يتم عرض وسوم المهارات هنا -->
+                </div>
+            </div>
+
+            <!-- 5. اللغات -->
+            <div class="mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-200/80">
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                        <span class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs"><i class="fa-solid fa-globe"></i></span>
+                        اللغات
+                    </h2>
+                    <button onclick="addLanguage()" class="px-3 py-1.5 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition flex items-center gap-1">
+                        <i class="fa-solid fa-plus"></i> إضافة لغة
+                    </button>
+                </div>
+                <div id="languages-list" class="space-y-2">
+                    <!-- يتم عرض اللغات هنا -->
+                </div>
+            </div>
+
+        </section>
+
+        <!-- القسم الأيسر: المعاينة الحية للسيرة الذاتية (Live A4 Preview) -->
+        <section id="preview-section" class="print-container hidden lg:block w-full lg:w-7/12 xl:w-8/12 bg-slate-200/70 p-4 sm:p-8 overflow-y-auto lg:h-[calc(100vh-4rem)]">
+            
+            <!-- ورقة السيرة الذاتية بمقاس A4 -->
+            <div id="cv-paper" class="a4-paper rounded-none sm:rounded-sm overflow-hidden flex flex-col" dir="rtl">
+                
+                <!-- ترويسة السيرة الذاتية (Header) -->
+                <div id="cv-header" class="p-8 text-white transition-colors duration-300" style="background-color: #4f46e5;">
+                    <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+                        <!-- الصورة الشخصية في السيرة -->
+                        <div id="cv-avatar-container" class="w-28 h-28 rounded-2xl overflow-hidden border-4 border-white/20 shadow-lg flex-shrink-0 bg-white/10">
+                            <img id="cv-avatar" src="https://placehold.co/150x150/e2e8f0/475569?text=Photo" alt="Profile" class="w-full h-full object-cover">
+                        </div>
+                        
+                        <!-- الاسم والمسمى وبيانات التواصل -->
+                        <div class="flex-1 text-center sm:text-start">
+                            <h1 id="cv-name" class="text-3xl font-extrabold tracking-tight mb-1">أحمد محمد المنصور</h1>
+                            <p id="cv-title" class="text-lg font-medium text-white/90 mb-4">مطور واجهات أمامية ومهندس برمجيات (Frontend Developer)</p>
+                            
+                            <!-- شبكة معلومات الاتصال -->
+                            <div class="flex flex-wrap justify-center sm:justify-start gap-x-5 gap-y-2 text-xs sm:text-sm text-white/90">
+                                <div id="cv-email-box" class="flex items-center gap-1.5">
+                                    <i class="fa-solid fa-envelope opacity-80"></i>
+                                    <span id="cv-email">ahmed.dev@example.com</span>
+                                </div>
+                                <div id="cv-phone-box" class="flex items-center gap-1.5">
+                                    <i class="fa-solid fa-phone opacity-80"></i>
+                                    <span id="cv-phone" dir="ltr">+966 50 123 4567</span>
+                                </div>
+                                <div id="cv-location-box" class="flex items-center gap-1.5">
+                                    <i class="fa-solid fa-location-dot opacity-80"></i>
+                                    <span id="cv-location">الرياض، المملكة العربية السعودية</span>
+                                </div>
+                                <div id="cv-website-box" class="flex items-center gap-1.5">
+                                    <i class="fa-solid fa-link opacity-80"></i>
+                                    <span id="cv-website" dir="ltr">github.com/ahmed-dev</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- جسم السيرة الذاتية (Body) -->
+                <div class="p-8 flex-1 grid grid-cols-1 md:grid-cols-12 gap-8 bg-white">
+                    
+                    <!-- العمود الرئيسي (الملخص + الخبرات + التعليم) -->
+                    <div class="md:col-span-8 space-y-6">
+                        
+                        <!-- النبذة التعريفية -->
+                        <div id="cv-summary-section">
+                            <h3 class="cv-section-title text-base font-extrabold uppercase tracking-wider pb-1.5 mb-3 border-b-2 flex items-center gap-2" style="color: #4f46e5; border-color: #4f46e5;">
+                                <i class="fa-solid fa-user-tie"></i>
+                                <span data-i18n="summaryTitle">الملخص المهني</span>
+                            </h3>
+                            <p id="cv-summary" class="text-sm text-slate-600 leading-relaxed whitespace-pre-line"></p>
+                        </div>
+
+                        <!-- الخبرات العملية -->
+                        <div id="cv-experience-section">
+                            <h3 class="cv-section-title text-base font-extrabold uppercase tracking-wider pb-1.5 mb-4 border-b-2 flex items-center gap-2" style="color: #4f46e5; border-color: #4f46e5;">
+                                <i class="fa-solid fa-briefcase"></i>
+                                <span data-i18n="experienceTitle">الخبرات العملية</span>
+                            </h3>
+                            <div id="cv-experience-items" class="space-y-5">
+                                <!-- يتم ملؤها بواسطة JS -->
+                            </div>
+                        </div>
+
+                        <!-- التعليم والمؤهلات -->
+                        <div id="cv-education-section">
+                            <h3 class="cv-section-title text-base font-extrabold uppercase tracking-wider pb-1.5 mb-4 border-b-2 flex items-center gap-2" style="color: #4f46e5; border-color: #4f46e5;">
+                                <i class="fa-solid fa-graduation-cap"></i>
+                                <span data-i18n="educationTitle">التعليم والمؤهلات</span>
+                            </h3>
+                            <div id="cv-education-items" class="space-y-4">
+                                <!-- يتم ملؤها بواسطة JS -->
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- العمود الجانبي (المهارات + اللغات) -->
+                    <div class="md:col-span-4 space-y-6 bg-slate-50/80 p-5 rounded-2xl border border-slate-100 h-fit">
+                        
+                        <!-- المهارات -->
+                        <div id="cv-skills-section">
+                            <h3 class="cv-section-title text-base font-extrabold uppercase tracking-wider pb-1.5 mb-3 border-b-2 flex items-center gap-2" style="color: #4f46e5; border-color: #4f46e5;">
+                                <i class="fa-solid fa-code"></i>
+                                <span data-i18n="skillsTitle">المهارات</span>
+                            </h3>
+                            <div id="cv-skills-items" class="flex flex-wrap gap-2">
+                                <!-- يتم ملؤها بواسطة JS -->
+                            </div>
+                        </div>
+
+                        <!-- اللغات -->
+                        <div id="cv-languages-section">
+                            <h3 class="cv-section-title text-base font-extrabold uppercase tracking-wider pb-1.5 mb-3 border-b-2 flex items-center gap-2" style="color: #4f46e5; border-color: #4f46e5;">
+                                <i class="fa-solid fa-language"></i>
+                                <span data-i18n="languagesTitle">اللغات</span>
+                            </h3>
+                            <div id="cv-languages-items" class="space-y-2.5">
+                                <!-- يتم ملؤها بواسطة JS -->
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- إشعار منبثق (Toast Notification) بديل لـ alert -->
+    <div id="toast" class="no-print fixed bottom-5 left-5 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl text-sm font-medium transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex items-center gap-2">
+        <i class="fa-solid fa-circle-check text-emerald-400"></i>
+        <span id="toast-message">تم حفظ التغييرات تلقائياً</span>
+    </div>
+
+    <!-- المنطق البرمجي للتطبيق (JavaScript) -->
+    <script>
+        // البيانات الافتراضية باللغة العربية
+        const defaultDataAr = {
+            lang: 'ar',
+            themeColor: '#4f46e5',
+            avatar: 'https://placehold.co/150x150/4f46e5/ffffff?text=AM',
+            showAvatar: true,
+            name: 'أحمد محمد المنصور',
+            title: 'مطور برمجيات ومصمم واجهات مستخدم (Full-Stack Developer)',
+            email: 'ahmed.mansour@example.com',
+            phone: '+966 50 123 4567',
+            location: 'الرياض، المملكة العربية السعودية',
+            website: 'github.com/ahmed-dev',
+            summary: 'مطور برمجيات شغوف بخبرة تزيد عن 5 سنوات في بناء تطبيقات الويب الحديثة عالية الأداء. أمتلك خبرة قوية في تقنيات الواجهات الأمامية والخلفية، مع تركيز خاص على تجربة المستخدم وجودة الكود البرمجي النظيف.',
+            experiences: [
+                {
+                    role: 'مطور واجهات أمامية أول (Senior Frontend Developer)',
+                    company: 'شركة تقنية المستقبل للحلول الرقمية',
+                    period: '2023 - الحاضر',
+                    description: 'قيادة فريق تطوير الواجهات، وتحسين سرعة تحميل التطبيقات بنسبة 40% باستخدام أحدث تقنيات الويب وتطبيق معايير التصميم المتجاوب.'
+                },
+                {
+                    role: 'مطور ويب متكامل (Web Developer)',
+                    company: 'استوديو إبداع للبرمجيات',
+                    period: '2020 - 2023',
+                    description: 'تطوير وبناء أكثر من 15 موقعاً ومنصة إلكترونية متكاملة، وربط واجهات برمجة التطبيقات (REST APIs) وقواعد البيانات.'
+                }
+            ],
+            education: [
+                {
+                    degree: 'بكالوريوس في علوم الحاسب وهندسة البرمجيات',
+                    institution: 'جامعة الملك سعود',
+                    year: '2016 - 2020'
+                }
+            ],
+            skills: ['HTML5 & CSS3', 'JavaScript (ES6+)', 'React.js', 'Tailwind CSS', 'Git & GitHub', 'Node.js', 'UI/UX Design', 'RESTful APIs'],
+            languages: [
+                { name: 'العربية', level: 'اللغة الأم' },
+                { name: 'الإنجليزية', level: 'متقدم جداً (C1)' }
+            ]
+        };
+
+        // البيانات الافتراضية باللغة الإنجليزية عند التبديل
+        const defaultDataEn = {
+            lang: 'en',
+            themeColor: '#4f46e5',
+            avatar: 'https://placehold.co/150x150/4f46e5/ffffff?text=AM',
+            showAvatar: true,
+            name: 'Ahmed M. Al-Mansour',
+            title: 'Senior Full-Stack Web Developer & UI Engineer',
+            email: 'ahmed.mansour@example.com',
+            phone: '+966 50 123 4567',
+            location: 'Riyadh, Saudi Arabia',
+            website: 'github.com/ahmed-dev',
+            summary: 'Passionate Software Engineer with 5+ years of experience building high-performance, scalable web applications. Strong expertise in modern frontend architectures, clean code practices, and responsive user-centric design.',
+            experiences: [
+                {
+                    role: 'Senior Frontend Developer',
+                    company: 'FutureTech Digital Solutions',
+                    period: '2023 - Present',
+                    description: 'Led the frontend engineering team, improving web application load speed by 40% and establishing a unified design system.'
+                },
+                {
+                    role: 'Full-Stack Web Developer',
+                    company: 'Ibda Software Studio',
+                    period: '2020 - 2023',
+                    description: 'Developed and deployed 15+ custom web platforms, integrating RESTful APIs and relational databases.'
+                }
+            ],
+            education: [
+                {
+                    degree: 'B.Sc. in Computer Science & Software Engineering',
+                    institution: 'King Saud University',
+                    year: '2016 - 2020'
+                }
+            ],
+            skills: ['HTML5 & CSS3', 'JavaScript (ES6+)', 'React.js', 'Tailwind CSS', 'Git & GitHub', 'Node.js', 'UI/UX Design', 'RESTful APIs'],
+            languages: [
+                { name: 'Arabic', level: 'Native' },
+                { name: 'English', level: 'Fluent (C1)' }
+            ]
+        };
+
+        // الحالة الحالية للتطبيق (تُحمّل من LocalStorage إن وجدت)
+        let cvData = JSON.parse(localStorage.getItem('procv_data_v1')) || JSON.parse(JSON.stringify(defaultDataAr));
+
+        // ترجمات عناوين الأقسام داخل السيرة الذاتية
+        const i18nLabels = {
+            ar: {
+                summaryTitle: 'الملخص المهني',
+                experienceTitle: 'الخبرات العملية',
+                educationTitle: 'التعليم والمؤهلات',
+                skillsTitle: 'المهارات',
+                languagesTitle: 'اللغات',
+                langBtn: 'English CV'
+            },
+            en: {
+                summaryTitle: 'Professional Summary',
+                experienceTitle: 'Work Experience',
+                educationTitle: 'Education',
+                skillsTitle: 'Skills',
+                languagesTitle: 'Languages',
+                langBtn: 'سيرة ذاتية عربية'
+            }
+        };
+
+        // تهيئة التطبيق عند التحميل
+        window.onload = function() {
+            populateEditorFields();
+            renderCV();
+            applyThemeColor(cvData.themeColor);
+            applyLanguageDirection();
+        };
+
+        // حفظ البيانات في المتصفح تلقائياً
+        function saveData() {
+            try {
+                localStorage.setItem('procv_data_v1', JSON.stringify(cvData));
+            } catch (e) {
+                console.warn('تعذر الحفظ في التخزين المحلي:', e);
+            }
+        }
+
+        // عرض إشعار للمستخدم
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').textContent = msg;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 2500);
+        }
+
+        // تحديث حقل نصي مباشر
+        function updateData(field, value) {
+            cvData[field] = value;
+            saveData();
+            renderCV();
+        }
+
+        // ملء حقول المحرر بالبيانات الحالية
+        function populateEditorFields() {
+            document.getElementById('input-name').value = cvData.name || '';
+            document.getElementById('input-title').value = cvData.title || '';
+            document.getElementById('input-email').value = cvData.email || '';
+            document.getElementById('input-phone').value = cvData.phone || '';
+            document.getElementById('input-location').value = cvData.location || '';
+            document.getElementById('input-website').value = cvData.website || '';
+            document.getElementById('input-summary').value = cvData.summary || '';
+            document.getElementById('editor-avatar-preview').src = cvData.avatar;
+
+            renderEditorExperiences();
+            renderEditorEducation();
+            renderEditorSkills();
+            renderEditorLanguages();
+        }
+
+        // رسم السيرة الذاتية في قسم المعاينة
+        function renderCV() {
+            // البيانات الأساسية
+            document.getElementById('cv-name').textContent = cvData.name || 'الاسم الكامل';
+            document.getElementById('cv-title').textContent = cvData.title || 'المسمى الوظيفي';
+            
+            // إظهار أو إخفاء حقول التواصل بناءً على وجود محتوى
+            toggleContactField('cv-email-box', 'cv-email', cvData.email);
+            toggleContactField('cv-phone-box', 'cv-phone', cvData.phone);
+            toggleContactField('cv-location-box', 'cv-location', cvData.location);
+            toggleContactField('cv-website-box', 'cv-website', cvData.website);
+
+            // الصورة الشخصية
+            const avatarContainer = document.getElementById('cv-avatar-container');
+            if (cvData.showAvatar && cvData.avatar) {
+                avatarContainer.classList.remove('hidden');
+                document.getElementById('cv-avatar').src = cvData.avatar;
+            } else {
+                avatarContainer.classList.add('hidden');
+            }
+
+            // الملخص المهني
+            const summarySec = document.getElementById('cv-summary-section');
+            if (cvData.summary && cvData.summary.trim() !== '') {
+                summarySec.classList.remove('hidden');
+                document.getElementById('cv-summary').textContent = cvData.summary;
+            } else {
+                summarySec.classList.add('hidden');
+            }
+
+            // الخبرات العملية
+            const expContainer = document.getElementById('cv-experience-items');
+            const expSection = document.getElementById('cv-experience-section');
+            if (cvData.experiences && cvData.experiences.length > 0) {
+                expSection.classList.remove('hidden');
+                expContainer.innerHTML = cvData.experiences.map(exp => `
+                    <div class="relative border-s-2 border-slate-200 ps-4">
+                        <div class="w-2.5 h-2.5 rounded-full absolute -start-[6px] top-1.5" style="background-color: ${cvData.themeColor}"></div>
+                        <div class="flex flex-wrap justify-between items-baseline gap-2 mb-1">
+                            <h4 class="font-bold text-slate-900 text-sm">${escapeHTML(exp.role)}</h4>
+                            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600">${escapeHTML(exp.period)}</span>
+                        </div>
+                        <p class="text-xs font-bold mb-1.5" style="color: ${cvData.themeColor}">${escapeHTML(exp.company)}</p>
+                        <p class="text-xs text-slate-600 leading-relaxed whitespace-pre-line">${escapeHTML(exp.description)}</p>
+                    </div>
+                `).join('');
+            } else {
+                expSection.classList.add('hidden');
+            }
+
+            // التعليم
+            const eduContainer = document.getElementById('cv-education-items');
+            const eduSection = document.getElementById('cv-education-section');
+            if (cvData.education && cvData.education.length > 0) {
+                eduSection.classList.remove('hidden');
+                eduContainer.innerHTML = cvData.education.map(edu => `
+                    <div class="flex flex-wrap justify-between items-start gap-2">
+                        <div>
+                            <h4 class="font-bold text-slate-900 text-sm">${escapeHTML(edu.degree)}</h4>
+                            <p class="text-xs text-slate-600">${escapeHTML(edu.institution)}</p>
+                        </div>
+                        <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600">${escapeHTML(edu.year)}</span>
+                    </div>
+                `).join('');
+            } else {
+                eduSection.classList.add('hidden');
+            }
+
+            // المهارات
+            const skillsContainer = document.getElementById('cv-skills-items');
+            const skillsSection = document.getElementById('cv-skills-section');
+            if (cvData.skills && cvData.skills.length > 0) {
+                skillsSection.classList.remove('hidden');
+                skillsContainer.innerHTML = cvData.skills.map(skill => `
+                    <span class="px-2.5 py-1 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 shadow-xs">
+                        ${escapeHTML(skill)}
+                    </span>
+                `).join('');
+            } else {
+                skillsSection.classList.add('hidden');
+            }
+
+            // اللغات
+            const langsContainer = document.getElementById('cv-languages-items');
+            const langsSection = document.getElementById('cv-languages-section');
+            if (cvData.languages && cvData.languages.length > 0) {
+                langsSection.classList.remove('hidden');
+                langsContainer.innerHTML = cvData.languages.map(lang => `
+                    <div class="flex justify-between items-center text-xs bg-white px-3 py-2 rounded-lg border border-slate-200/70">
+                        <span class="font-bold text-slate-800">${escapeHTML(lang.name)}</span>
+                        <span class="text-slate-500 font-medium">${escapeHTML(lang.level)}</span>
+                    </div>
+                `).join('');
+            } else {
+                langsSection.classList.add('hidden');
+            }
+        }
+
+        function toggleContactField(boxId, textId, value) {
+            const box = document.getElementById(boxId);
+            if (value && value.trim() !== '') {
+                box.classList.remove('hidden');
+                document.getElementById(textId).textContent = value;
+            } else {
+                box.classList.add('hidden');
+            }
+        }
+
+        // إدارة الخبرات في المحرر
+        function renderEditorExperiences() {
+            const list = document.getElementById('experience-list');
+            list.innerHTML = cvData.experiences.map((exp, index) => `
+                <div class="p-3 bg-white rounded-xl border border-slate-200 space-y-2 relative">
+                    <button onclick="removeExperience(${index})" class="absolute top-2.5 left-2.5 text-slate-400 hover:text-red-500 transition" title="حذف">
+                        <i class="fa-solid fa-trash-can text-xs"></i>
+                    </button>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                        <input type="text" placeholder="المسمى الوظيفي" value="${escapeAttr(exp.role)}" oninput="updateExperience(${index}, 'role', this.value)" class="px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold">
+                        <input type="text" placeholder="اسم الشركة" value="${escapeAttr(exp.company)}" oninput="updateExperience(${index}, 'company', this.value)" class="px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs">
+                    </div>
+                    <input type="text" placeholder="الفترة الزمنية (مثال: 2022 - الحاضر)" value="${escapeAttr(exp.period)}" oninput="updateExperience(${index}, 'period', this.value)" class="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs">
+                    <textarea rows="2" placeholder="وصف المهام والإنجازات..." oninput="updateExperience(${index}, 'description', this.value)" class="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs">${escapeHTML(exp.description)}</textarea>
+                </div>
+            `).join('');
+        }
+
+        function addExperience() {
+            cvData.experiences.push({
+                role: cvData.lang === 'ar' ? 'مسمى وظيفي جديد' : 'New Position',
+                company: cvData.lang === 'ar' ? 'اسم الشركة' : 'Company Name',
+                period: '2024 - Present',
+                description: cvData.lang === 'ar' ? 'وصف موجز للمسؤوليات والإنجازات.' : 'Brief description of responsibilities and achievements.'
+            });
+            saveData();
+            renderEditorExperiences();
+            renderCV();
+        }
+
+        function updateExperience(index, field, value) {
+            cvData.experiences[index][field] = value;
+            saveData();
+            renderCV();
+        }
+
+        function removeExperience(index) {
+            cvData.experiences.splice(index, 1);
+            saveData();
+            renderEditorExperiences();
+            renderCV();
+        }
+
+        // إدارة التعليم في المحرر
+        function renderEditorEducation() {
+            const list = document.getElementById('education-list');
+            list.innerHTML = cvData.education.map((edu, index) => `
+                <div class="p-3 bg-white rounded-xl border border-slate-200 space-y-2 relative">
+                    <button onclick="removeEducation(${index})" class="absolute top-2.5 left-2.5 text-slate-400 hover:text-red-500 transition" title="حذف">
+                        <i class="fa-solid fa-trash-can text-xs"></i>
+                    </button>
+                    <input type="text" placeholder="الدرجة العلمية / الشهادة" value="${escapeAttr(edu.degree)}" oninput="updateEducation(${index}, 'degree', this.value)" class="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold">
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="text" placeholder="الجامعة / الجهة المانحة" value="${escapeAttr(edu.institution)}" oninput="updateEducation(${index}, 'institution', this.value)" class="px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs">
+                        <input type="text" placeholder="سنة التخرج" value="${escapeAttr(edu.year)}" oninput="updateEducation(${index}, 'year', this.value)" class="px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs">
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function addEducation() {
+            cvData.education.push({
+                degree: cvData.lang === 'ar' ? 'درجة علمية أو شهادة' : 'Degree or Certificate',
+                institution: cvData.lang === 'ar' ? 'اسم الجامعة أو المعهد' : 'University / Institution',
+                year: '2020'
+            });
+            saveData();
+            renderEditorEducation();
+            renderCV();
+        }
+
+        function updateEducation(index, field, value) {
+            cvData.education[index][field] = value;
+            saveData();
+            renderCV();
+        }
+
+        function removeEducation(index) {
+            cvData.education.splice(index, 1);
+            saveData();
+            renderEditorEducation();
+            renderCV();
+        }
+
+        // إدارة المهارات في المحرر
+        function renderEditorSkills() {
+            const container = document.getElementById('skills-tags');
+            container.innerHTML = cvData.skills.map((skill, index) => `
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-700">
+                    ${escapeHTML(skill)}
+                    <button onclick="removeSkill(${index})" class="text-slate-400 hover:text-red-500">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </span>
+            `).join('');
+        }
+
+        function addSkill() {
+            const input = document.getElementById('new-skill-input');
+            const val = input.value.trim();
+            if (val) {
+                cvData.skills.push(val);
+                input.value = '';
+                saveData();
+                renderEditorSkills();
+                renderCV();
+            }
+        }
+
+        function removeSkill(index) {
+            cvData.skills.splice(index, 1);
+            saveData();
+            renderEditorSkills();
+            renderCV();
+        }
+
+        // إدارة اللغات في المحرر
+        function renderEditorLanguages() {
+            const list = document.getElementById('languages-list');
+            list.innerHTML = cvData.languages.map((lang, index) => `
+                <div class="flex items-center gap-2">
+                    <input type="text" placeholder="اللغة" value="${escapeAttr(lang.name)}" oninput="updateLanguage(${index}, 'name', this.value)" class="flex-1 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold">
+                    <input type="text" placeholder="المستوى" value="${escapeAttr(lang.level)}" oninput="updateLanguage(${index}, 'level', this.value)" class="flex-1 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs">
+                    <button onclick="removeLanguage(${index})" class="p-1.5 text-slate-400 hover:text-red-500">
+                        <i class="fa-solid fa-trash-can text-xs"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function addLanguage() {
+            cvData.languages.push({
+                name: cvData.lang === 'ar' ? 'لغة جديدة' : 'Language',
+                level: cvData.lang === 'ar' ? 'جيد جداً' : 'Intermediate'
+            });
+            saveData();
+            renderEditorLanguages();
+            renderCV();
+        }
+
+        function updateLanguage(index, field, value) {
+            cvData.languages[index][field] = value;
+            saveData();
+            renderCV();
+        }
+
+        function removeLanguage(index) {
+            cvData.languages.splice(index, 1);
+            saveData();
+            renderEditorLanguages();
+            renderCV();
+        }
+
+        // رفع الصورة الشخصية ومعالجتها محلياً
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                cvData.avatar = e.target.result;
+                cvData.showAvatar = true;
+                document.getElementById('editor-avatar-preview').src = cvData.avatar;
+                saveData();
+                renderCV();
+                showToast('تم تحديث الصورة الشخصية');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeAvatar() {
+            cvData.showAvatar = false;
+            saveData();
+            renderCV();
+            showToast('تم إخفاء الصورة الشخصية');
+        }
+
+        // تغيير لون القالب
+        function setThemeColor(hexColor) {
+            cvData.themeColor = hexColor;
+            saveData();
+            applyThemeColor(hexColor);
+            renderCV();
+        }
+
+        function applyThemeColor(hexColor) {
+            document.getElementById('cv-header').style.backgroundColor = hexColor;
+            document.getElementById('brand-icon').style.backgroundColor = hexColor;
+            document.getElementById('brand-accent').style.color = hexColor;
+            document.getElementById('print-btn').style.backgroundColor = hexColor;
+            
+            document.querySelectorAll('.cv-section-title').forEach(el => {
+                el.style.color = hexColor;
+                el.style.borderColor = hexColor;
+            });
+        }
+
+        // التبديل بين السيرة الذاتية العربية والإنجليزية
+        function toggleLanguage() {
+            const targetLang = cvData.lang === 'ar' ? 'en' : 'ar';
+            const currentTheme = cvData.themeColor;
+            const currentAvatar = cvData.avatar;
+            const currentShowAvatar = cvData.showAvatar;
+
+            // تحميل القالب المناسب للغة المختارة
+            cvData = JSON.parse(JSON.stringify(targetLang === 'ar' ? defaultDataAr : defaultDataEn));
+            cvData.themeColor = currentTheme;
+            cvData.avatar = currentAvatar;
+            cvData.showAvatar = currentShowAvatar;
+
+            saveData();
+            applyLanguageDirection();
+            populateEditorFields();
+            applyThemeColor(cvData.themeColor);
+            renderCV();
+            showToast(targetLang === 'en' ? 'Switched to English CV template' : 'تم التحويل إلى قالب السيرة الذاتية العربية');
+        }
+
+        function applyLanguageDirection() {
+            const paper = document.getElementById('cv-paper');
+            const lang = cvData.lang || 'ar';
+            paper.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+            paper.style.fontFamily = lang === 'ar' ? "'Tajawal', sans-serif" : "'Inter', sans-serif";
+            
+            document.getElementById('lang-btn-text').textContent = i18nLabels[lang].langBtn;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (i18nLabels[lang][key]) {
+                    el.textContent = i18nLabels[lang][key];
+                }
+            });
+        }
+
+        // استعادة البيانات التجريبية
+        function resetToSample() {
+            const currentLang = cvData.lang || 'ar';
+            cvData = JSON.parse(JSON.stringify(currentLang === 'ar' ? defaultDataAr : defaultDataEn));
+            saveData();
+            populateEditorFields();
+            applyThemeColor(cvData.themeColor);
+            applyLanguageDirection();
+            renderCV();
+            showToast('تمت استعادة البيانات التجريبية بنجاح');
+        }
+
+        // التبديل بين المحرر والمعاينة على الهواتف
+        function switchMobileTab(tab) {
+            const editor = document.getElementById('editor-section');
+            const preview = document.getElementById('preview-section');
+            const tabEditor = document.getElementById('tab-editor');
+            const tabPreview = document.getElementById('tab-preview');
+
+            if (tab === 'editor') {
+                editor.classList.remove('hidden');
+                preview.classList.add('hidden');
+                tabEditor.className = 'flex-1 py-2.5 rounded-xl bg-indigo-600 text-white font-bold text-sm transition';
+                tabPreview.className = 'flex-1 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold text-sm transition';
+            } else {
+                editor.classList.add('hidden');
+                preview.classList.remove('hidden');
+                tabPreview.className = 'flex-1 py-2.5 rounded-xl bg-indigo-600 text-white font-bold text-sm transition';
+                tabEditor.className = 'flex-1 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold text-sm transition';
+            }
+        }
+
+        // دوال حماية النصوص من حقن الأكواد (XSS Protection)
+        function escapeHTML(str) {
+            if (!str) return '';
+            return str.replace(/[&<>'"]/g, tag => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                "'": '&#39;',
+                '"': '&quot;'
+            }[tag]));
+        }
+
+        function escapeAttr(str) {
+            return escapeHTML(str);
+        }
+    </script>
+</body>
+</html>
